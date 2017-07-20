@@ -1,0 +1,194 @@
+#!/bin/bash
+
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+#
+# Copyright 2017, Joyent, Inc.
+#
+
+tmp=`mktemp`
+prog=`basename $0`
+
+if [[ ! -f README.md || ! -d ./rfe ]]; then
+	echo $prog: must be run in root directory of rfe repository
+	exit 1
+fi
+
+#
+# Create an awk script that will do a pass over README.md to verify that
+# the links are properly formed and RFE numbers appropriately used in the
+# RFE table.
+#
+cat > $tmp <<EOF
+{
+	l++;
+
+	if (\$0 == "| state    | RFE |") {
+		if (rfetable) {
+			printf("$prog: table found twice\n");
+			exit 1;
+		}
+
+		rfetable = 1;
+		nextrfe = 0;
+		next;
+	}
+
+	if (!rfetable)
+		next;
+
+	if (\$2 == "--------") {
+		if (nextrfe != 0) {
+			printf("$prog: header found twice\n");
+			exit 1;
+		}
+
+		next;
+	}
+
+	if (length(\$0) == 0) {
+		done = 1;
+		next;
+	}
+
+	if (done) {
+		if (\$4 == "[RFE" && \$0 ~ "/rfe/") {
+			printf("$prog: RFE at line %d is not in table\n", l);
+			exit 1;
+		}
+
+		next;
+	}
+
+	nextrfe++;
+	rfe = \$5;
+	state = \$2;
+
+	if (rfe != nextrfe) {
+		printf("$prog: at line %d, expected RFE %d found RFE %s\n",
+		    l, nextrfe, rfe);
+		exit 1;
+	}
+
+	if (state != "publish" && state != "draft" && state != "predraft") {
+		printf("$prog: illegal state '%s' for RFE %s\n", \$2, rfe);
+		exit 1;
+	}
+
+	link = substr(\$0, index(\$0, "]") + 1, length(\$0));
+
+	link = substr(link, 2, index(link, ")") - 2);
+
+	if (rfe < 10) {
+		prefix = "000";
+	} else if (rfe < 100) {
+		prefix = "00";
+	} else if (rfe < 1000) {
+		prefix = "0";
+	}
+
+	expected = "./rfe/" prefix rfe "/README"
+
+	if (link != expected ".md" && link != expected ".adoc") {
+		printf("$prog: RFE %d has malformed link '%s'\n", rfe, link);
+		exit 1;
+	}
+}
+EOF
+
+cat README.md | awk -f $tmp
+rm $tmp
+
+if [[ $? -ne 0 ]]; then
+	exit 1
+fi
+
+#
+# Now iterate over every RFE and make sure that it's in the table in README.md
+# and in a matching state and with sane metadata.
+#
+for f in rfe/[0-9][0-9][0-9][0-9]/README.md rfe/*/README.adoc; do
+	if [[ ! -f $f ]]; then
+		continue
+	fi
+
+	line=`grep '^|' README.md | grep $f`;
+
+	if [[ -z "$line" ]]; then
+		echo "$prog: did not find $f linked in RFE table in README.md"
+
+		state=`grep "^state: " $f | awk '{ print $2 }'`
+		title=`cat $f | grep -w ^# | head -1 | cut -c3-`
+
+		if [[ -n $state && -n $title ]]; then
+			echo "$prog: add the following line to the RFE table: "
+			echo
+			echo "| $state | [$title](./$f) |"
+		fi
+
+		exit 1
+	fi
+
+	state=`echo $line | cut -d\| -f2 | awk '{ print $1 }'`
+	title=`echo $line | cut -d\| -f3 | cut -d\[ -f2 | cut -d\] -f1`
+	rfe=`echo $line | awk '{ print $5 }'`
+	check=`cat $f | grep -w ^# | head -1 | cut -c3-`
+
+	if [[ "$title" != "$check" ]]; then
+		echo "$prog: mismatched title on RFE $rfe";
+		echo "$prog: in README.md: \"$title\""
+		echo "$prog: in $f: \"$check\""
+		exit 1
+	fi
+
+	if [[ `basename $f` == "README.adoc" ]]; then
+		continue
+	fi
+
+	if [[ `head -1 $f` != "---" ]]; then
+		echo "$prog: missing metadata in $f"
+		exit 1
+	fi
+
+	check=`grep "^state: " $f | awk '{ print $2 }'`
+
+	if [[ "$state" != "$check" ]]; then
+		echo "$prog: mismatched state on RFE $rfe"
+		echo "$prog: in README.md: \"$state\""
+		echo "$prog: in $f: \"$check\""
+		exit 1
+	fi
+
+	authors=`grep "^authors: " $f | cut -d: -f2- | cut -c2-`
+
+	if [[ -z "$authors" ]]; then
+		echo "$prog: RFE $rfe is missing an 'authors' field"
+		exit 1
+	fi
+
+	if [[ "$state" != "publish" ]]; then
+		discussion=`grep "^discussion: " $f`
+
+		if [[ -z $discussion ]]; then
+cat <<EOF
+$prog: RFE $rfe (in $state state) lacks 'discussion' field
+$prog: if not already opened, add the following issue:
+
+RFE $rfe: Discussion
+
+This issue represents an opportunity for discussion of [$title](https://github.com/joyent/rfe/tree/master/$f) while it remains in a pre-published state.
+
+$prog: Then add to metadata section in ./$f:
+
+discussion: https://github.com/joyent/rfe/issues?q=%22RFE+${rfe}%22
+
+EOF
+			exit 1
+		fi
+	fi
+done
+
