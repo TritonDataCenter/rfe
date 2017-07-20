@@ -18,5 +18,5 @@ discussion: https://github.com/joyent/rfe/issues?q=%22RFE+1%22
 
 If it's not obvious that this RFE should be replaced with whatever is 
 actually to be RFE 1, you sorely need to review Jack "Action Jack" Barker's
-Conjoined Triangle of Success!
+[Conjoined Triangles of Success](http://conjoinedtriangles.com/)!
 
