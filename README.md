@@ -35,7 +35,7 @@ separately.
 
 | state    | RFE |
 | -------- | ------------------------------------------------------------- |
-| predraft | [RFE 1 Add middle-out compression](./rfe/0001/README.md) |
+| predraft | [RFE 1 The Router Network Object for Triton](./rfe/0001/README.md) |
 
 ## Contents of an RFE
 
