@@ -51,8 +51,9 @@ Many problems fall out of this situation.  Among them
 
 First, a simple Router object that would join two links, either Fabric, VLAN,
 or even both.  They can/should have distinct IP prefixes from each other (see
-one of the Fringe Ideas for a potential solution, though).  Specifying the
-UUID (and type?) of each link object should be sufficient for the front end.
+one of the Future and Even Fringe Ideas for a potential solution, though).
+Specifying the UUID (and type?) of each link object should be sufficient for
+the front end.
 
 Behind the scenes, there are these connectivity possibilities with which to
 contend:
@@ -81,7 +82,7 @@ will provide many advantages, including getting a toehold in places otherwise
 reluctant to adopt JPC or Triton.
 
 
-## Fringe ideas.
+## Future and Even Fringe Ideas.
 
 ### NAT to resolve same-prefix conflicts
 
@@ -89,4 +90,12 @@ Consider two networks that both use prefix 10.1.1.0/24.  If someone wishes to
 join them purely at the IP leve, they are out of luck.  A clever use of NAT,
 however, where one side's 10.1.1.0/24 becomes another side's 10.2.2.0/24 may
 be a useful tool to have in the Triton Router object.
+
+### Routing between multiple Router objects
+
+One may wish to form an entire network of more than just two LANs.  How would
+one do that?  What sort of routing protocol(s) would we need?  Even for a
+single Router object, dual-redundancy may mean using a routing protocol
+ANYWAY.  Is it easier, harder, or orthogonal when one add routing between
+multiple router objects?
 
