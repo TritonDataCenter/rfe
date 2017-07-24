@@ -81,6 +81,10 @@ clouds to bear.  Enabling routing between a Triton network and another cloud
 will provide many advantages, including getting a toehold in places otherwise
 reluctant to adopt JPC or Triton.
 
+Additionally, a router object MAY allow fabric network traffic it routes to
+escape to the Internet, like a home NAT box would.  This would enable more
+Triton instances to access external sources for software updates, and other
+Internet services.
 
 ## Future and Even Fringe Ideas.
 
