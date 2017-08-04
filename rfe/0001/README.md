@@ -44,7 +44,9 @@ Many problems fall out of this situation.  Among them
 
 * How much of this joining is behind-the-scenes vs. API-visible?
 
-* Do we wish to have a Router object that allows NAT-ing to the Internet?
+* Fabric networks and VLANs allow specification of a default route.  Do we
+  overload this to mean "router object address"?  Or do we introduce a new
+  concept to both VLANs and fabric networks?
 
 
 ## What We Want
@@ -54,6 +56,17 @@ or even both.  They can/should have distinct IP prefixes from each other (see
 one of the Future and Even Fringe Ideas for a potential solution, though).
 Specifying the UUID (and type?) of each link object should be sufficient for
 the front end.
+
+Using the examples of
+https://github.com/joyent/sdc-vmapi/blob/master/docs/index.md#specifying-networks-for-a-vm,
+perhaps something like:
+
+    [
+      { "router_uuid": "<UUID>" },
+      { "joined_networks",
+        "<network1-UUID>", "<network2-UUID>",.... },
+    ]
+
 
 Behind the scenes, there are these connectivity possibilities with which to
 contend:
