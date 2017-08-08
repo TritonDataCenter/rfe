@@ -116,3 +116,19 @@ single Router object, dual-redundancy may mean using a routing protocol
 ANYWAY.  Is it easier, harder, or orthogonal when one add routing between
 multiple router objects?
 
+### Routing between networks from distinct customers.
+
+Feedback from earlier versions of this included:
+
+	This router object may have some role in our efforts to provide
+	services, or to enable Triton as a platform on which others can
+	provide services. For that, we may need to route between fabric
+	networks owned by different users. I imagine most of that will be
+	dependent on RBACv2, but I wanted to raise it for consideration here
+	as well.
+
+So naturally depending on RBACv2 (See
+https://github.com/joyent/rfd/tree/master/rfd/0048 ), the ability to route
+between distinct customers is desirable.  The same-prefix problem mentioned
+above might be a useful tool for this problem as well.
+
