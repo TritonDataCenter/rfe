@@ -21,13 +21,16 @@ discussion: https://github.com/joyent/rfe/issues?q=%22RFE+1%22
 
 * IKEv2
 
+* Fabric Networks
+
 
 ## Introduction
 
-On the JPC today, we have Fabric Networks <link> and traditional VLANs
-<link>.  Customers would like to be able to join these at the IP level.  The
-traditional means for doing this is the router.  This RFE will describe the
-Router network object for Triton.
+On the JPC today, we have Joyent-SDC networks, Fabric Networks <link>, and
+VLANs over either of the aforementioned <link>.  Customers would like to be
+able to join at least some of these at the IP level.  The traditional means
+for doing this is the router.  This RFE will describe the Router network
+object for Triton.
 
 
 ## The Problem(s)
@@ -48,8 +51,19 @@ Many problems fall out of this situation.  Among them
   overload this to mean "router object address"?  Or do we introduce a new
   concept to both VLANs and fabric networks?
 
+## What We Have
+
+* Today, behind the scenes, if a fabric network needs to reach the Internet,
+  underlying code in VMAPI establishes, or joins, a behind-the-scenes NAT
+  zone.  See here:  https://github.com/joyent/sdc-vmapi/blob/master/lib/workflows/fabric-common.js#L201
+
+* We also have a well-known JPC private network, but that may not be
+  something we wish to allow on a router object. (At least not immediately.)
+
 
 ## What We Want
+
+To a first approximation, an upgrade of the behind-the-scenes NAT zone.
 
 First, a simple Router object that would join two links, either Fabric, VLAN,
 or even both.  They can/should have distinct IP prefixes from each other (see
