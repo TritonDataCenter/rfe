@@ -33,12 +33,9 @@ for doing this is the router.  This RFE will describe the Router network
 object for Triton.
 
 
-## The Problem(s)
+## The Problems
 
 Many problems fall out of this situation.  Among them
-
-* The abstraction layer at which to solve this is likely an API of which I
-  have no experience.  :-/
 
 * We wish to join two or more Fabric Networks together.  Maybe even two or
   more traditional VLANs.
@@ -63,9 +60,7 @@ Many problems fall out of this situation.  Among them
 
 ## What We Want
 
-To a first approximation, an upgrade of the behind-the-scenes NAT zone.
-
-First, a simple Router object that would join two links, either Fabric, VLAN,
+A simple Router object that would join two links, either Fabric, VLAN,
 or even both.  They can/should have distinct IP prefixes from each other (see
 one of the Future and Even Fringe Ideas for a potential solution, though).
 Specifying the UUID (and type?) of each link object should be sufficient for
@@ -81,7 +76,48 @@ perhaps something like:
         "<network1-UUID>", "<network2-UUID>",.... },
     ]
 
+### Parameters for connectivity scenarios
 
+There are four parameters for connecting different networks.  Some of them
+are binary choices, some are not.
+
+#### Intra-DC vs. Inter-DC
+
+Networks can be located either on the same Triton Data Center, or on distinct
+ones.  Other factors (see below) may come into play as well, but
+inter-data-center traffic will require additional protections.  Networks on
+the same DC may not need additional protections, but could benefit from them
+if defense-in-depth is a concern.  (NOTE:  I'm assuming intra-DC can still
+span distinct compute-nodes.)
+
+#### Same Ownership vs. Different Ownership
+
+Distinct Triton owners of distinct networks may, just like in the real world,
+wish to connect networks they own to each other.  As with other parameters,
+this one does not stand by itself.  The implementation details may widely
+differ between, for example, intra-DC/different-owners
+vs. inter-DC/different-owners.
+
+None of those matter to a user or API consumer, however.
+
+#### Same UFDS vs. Different UFDS
+
+Beyond the ownership parameter, where two distinct owners likely are in the
+same UFDS, it is also possible that two Triton deployments may have two
+distinct UDFSes. For example, an on-site Triton deployment containing its own
+UDFS may wish to connect to the JPC, or some other Triton-backed cloud.
+
+#### Network Type: JPC, AWS, Generic
+
+This parameter becomes relevant when Inter-DC comes into play, but is beyond
+the knowledge of Triton at both ends.  A peer network may not be in a Triton
+cloud at all.  It could be another cloud, such as AWS's VPC.  It could be a
+single-remote-node (not unlike a secure remote-access client).  It could also
+be a generic OS installation that requires some amount of configuration,
+which could be provided by Triton.
+
+
+===================== (Cut up to and including here.) =====================
 Behind the scenes, there are these connectivity possibilities with which to
 contend:
 
@@ -100,6 +136,7 @@ use of NAT, clever use of IP-in-IP tunnels, or both, should help.
 
 Once the inter-DC problems are solved, most, if not all, of them can be
 generalized to on-premise Triton to a JPC location.
+===================== (Cut up to and including here.) =====================
 
 ### Triton to other-cloud routing.
 
@@ -112,6 +149,23 @@ Additionally, a router object MAY allow fabric network traffic it routes to
 escape to the Internet, like a home NAT box would.  This would enable more
 Triton instances to access external sources for software updates, and other
 Internet services.
+
+
+## Customer Expectations
+
+Anything we produce needs to make sure it does not unpleasantly surprise the
+customer or disappoint them.
+
+* High Assurance: HA is a vague term, but we should assume it includes
+  concepts like No Single Point of Failure.
+
+* Performance: Today, NAT zones are regarded as "zero-cost" additions to a
+  compute node AND to a packet's path.  A functionally richer router zone
+  may introduce measurable cost either to the compute node's CPU (encrypting
+  or running routing algorithms) or to network traffic (higher latency and/or
+  lower bandwidth).  Some of these costs are unavoidable, but should be
+  measured, and optimized where possible.
+
 
 ## Future and Even Fringe Ideas.
 
