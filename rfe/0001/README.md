@@ -1,7 +1,7 @@
 ---
 authors: Dan McDonald <danmcd@joyent.com>
 state: predraft
-discussion: https://github.com/joyent/rfe/issues?q=%22RFE+1%22
+discussion: https://github.com/joyent/rfe/issues/2
 ---
 
 <!--
