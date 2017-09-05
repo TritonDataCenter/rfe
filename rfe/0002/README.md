@@ -1,7 +1,7 @@
 ---
 authors: Dan McDonald <danmcd@joyent.com>
 state: predraft
-discussion: https://github.com/joyent/rfe/issues/
+discussion: https://github.com/joyent/rfe/issues/4
 ---
 
 <!--
@@ -31,7 +31,8 @@ discussion: https://github.com/joyent/rfe/issues/
 Alongside existing Triton network objects, a router object, as described in
 RFE 1, may need to connect to network objects outside a Triton Data Center's
 (DC's) object space.  These _external networks_ should be reachable via a
-Triton Router Object.
+Triton Remote Network Object, which can attach to a Router Object, or
+possibly even an instance.
 
 
 ## The Problems
@@ -48,8 +49,8 @@ level of trust existed between the two Triton DCs, sharing the same UFDS, for
 example.
 
 Some networks may be other clouds, such as AWS, Azure, or Google Cloud.  Each
-has their own heterogenous connectivity solution, and an external network
-object representing one of these may require more or less manual
+has their own heterogenous connectivity solution, and an External Network
+Object representing one of these may require more or less manual
 configuration than a remote Triton DC peer.
 
 Some networks may be VPN appliances, or some other sort of other network
@@ -77,7 +78,7 @@ perhaps merely one or more remote pairs of {IP address, UDP port} that can be
 reached by the local Triton instance's external IP.  Or even merely the name
 of a Triton DC if it happens to share a same UFDS with the local one.  To
 avoid NAT complications, a Triton DC set up to serve out Remote Network
-Objects (via its router object) should have a public IP with a range of UDP
+Objects (via its Router Object) should have a public IP with a range of UDP
 ports reserved for serving Remote Network Objects.
 
 An AWS, Google Cloud, or some other cloud type would have some amount of
