@@ -61,8 +61,8 @@ Many problems fall out of this situation.  Among them
 ## What We Want
 
 A simple Router object that would join two links, either Fabric, VLAN,
-or even both.  They can/should have distinct IP prefixes from each other (see
-one of the Future and Even Fringe Ideas for a potential solution, though).
+or even both.  They must have distinct IP prefixes from each other (see
+one of the Future and Even Fringe Ideas for a potential expansion, though).
 Specifying the UUID (and type?) of each link object should be sufficient for
 the front end.
 
@@ -75,6 +75,10 @@ perhaps something like:
       { "joined_networks",
         "<network1-UUID>", "<network2-UUID>",.... },
     ]
+
+Until IP prefix collisions are solved by Router Object processing, the Router
+Object must insure that all IP prefixes of all attached networks are
+disjoint.
 
 ### Parameters for connectivity scenarios
 
