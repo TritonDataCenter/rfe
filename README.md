@@ -36,6 +36,7 @@ separately.
 | state    | RFE |
 | -------- | ------------------------------------------------------------- |
 | predraft | [RFE 1 The Router Network Object for Triton](./rfe/0001/README.md) |
+| predraft | [RFE 2 The Remote Network Object](./rfe/0002/README.md) |
 
 ## Contents of an RFE
 
