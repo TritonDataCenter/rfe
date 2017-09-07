@@ -103,8 +103,14 @@ factors.
 
 ## Customer Expectations
 
-Remote Network objects should feel mostly like conventional Network Objects
-such as Fabric Networks.  Only the complications introduced by the peer
-should affect the user experience.  A Triton peer (same-UDFS or not) should
-be the least complex Remote Network object to configure.
+Remote Network Objects should feel similar to conventional Network Objects
+such as Fabric Networks.  A fabric network, especially attached to a router
+object, may not have many local-attachment parameters, such as provisionable
+IP addresses. If Remote Network Objects are allowed to be attached to
+instances, some other network parameters, like static routes or DNS servers,
+may be allowable.
 
+With respect to new user experiences, the complications introduced by a
+peer should provide the most visible changes.  A Triton peer (same-UDFS or
+not) should be the least complex Remote Network object to configure, and be
+the most similar to a conventional Network Object.
