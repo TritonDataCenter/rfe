@@ -76,10 +76,7 @@ a parameter one or more IP prefixes.
 A Triton DC Remote Network Object would have less configuration required,
 perhaps merely one or more remote pairs of {IP address, UDP port} that can be
 reached by the local Triton instance's external IP.  Or even merely the name
-of a Triton DC if it happens to share a same UFDS with the local one.  To
-avoid NAT complications, a Triton DC set up to serve out Remote Network
-Objects (via its Router Object) should have a public IP with a range of UDP
-ports reserved for serving Remote Network Objects.
+of a Triton DC if it happens to share a same UFDS with the local one.
 
 An AWS, Google Cloud, or some other cloud type would have some amount of
 configuration information similar to whatever the other cloud requires.
