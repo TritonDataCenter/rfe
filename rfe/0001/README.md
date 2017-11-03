@@ -72,8 +72,8 @@ perhaps something like:
 
     [
       { "router_uuid": "<UUID>" },
-      { "joined_networks",
-        "<network1-UUID>", "<network2-UUID>",.... },
+      { "joined_networks": [
+        "<network1-UUID>", "<network2-UUID>",.... ] },
     ]
 
 Until IP prefix collisions are solved by Router Object processing, the Router
@@ -91,8 +91,15 @@ Networks can be located either on the same Triton Data Center, or on distinct
 ones.  Other factors (see below) may come into play as well, but
 inter-data-center traffic will require additional protections.  Networks on
 the same DC may not need additional protections, but could benefit from them
-if defense-in-depth is a concern.  (NOTE:  I'm assuming intra-DC can still
-span distinct compute-nodes.)
+if defense-in-depth is a concern.
+
+A single intra-DC network can still span multiple compute nodes (CNs).  A
+router object may need to instantiate router zones on multiple CNs as well.
+A naive implementation could just instantiate one IP per network per CN. This
+does not scale will with IPv4 networks (there are DC deployments with over
+300 CNs today, for example).
+
+Inter-DC networks will likely need a different sort of router zone <TBD>.
 
 #### Same Ownership vs. Different Ownership
 
@@ -119,28 +126,6 @@ cloud at all.  It could be another cloud, such as AWS's VPC.  It could be a
 single-remote-node (not unlike a secure remote-access client).  It could also
 be a generic OS installation that requires some amount of configuration,
 which could be provided by Triton.
-
-
-===================== (Cut up to and including here.) =====================
-Behind the scenes, there are these connectivity possibilities with which to
-contend:
-
-### Intra-Data-Center routing.
-
-This should be relatively easy, and may not even involve any tunneling.
-
-### Inter-Data-Center routing.
-
-This will require more thought, including the requirement for tunneling (so
-one does not need dedicated inter-DC links).  A goal should be to reduce the
-number of public IP addresses required to construct these tunnels.  Clever
-use of NAT, clever use of IP-in-IP tunnels, or both, should help.
-
-### On-Premise Triton to DC routing.
-
-Once the inter-DC problems are solved, most, if not all, of them can be
-generalized to on-premise Triton to a JPC location.
-===================== (Cut up to and including here.) =====================
 
 ### Triton to other-cloud routing.
 
@@ -169,6 +154,53 @@ customer or disappoint them.
   or running routing algorithms) or to network traffic (higher latency and/or
   lower bandwidth).  Some of these costs are unavoidable, but should be
   measured, and optimized where possible.
+
+
+## Implementation issues
+
+### Forwarding entities implementation strategies
+
+The most straightforward approach is to construct a single zone, not unlike
+the NAT zone used for Fabric Networks, and have it forward packets between
+the networks.  Problems with this naive approach center around a single point
+of failure.
+
+An incremental upgrade of the straightforward approach is to construct
+multiple zones, each with distinct IP addresses for each network joined,
+scattered across a number of compute nodes in the DC.  This approach
+introduces a tradeoff between IP addresses consumed and redundancy.
+Furthermore, instances either have to run a routing protocol, or need more
+complex configuration management to select an appropriate router zone.
+
+Within a fabric network that spans compute nodes, it is possible to
+instantiate a single IP address in each compute node.  Changes to multiple
+APIs: at least NAPI and VMAPI, would be needed to cleanly instantiate
+shared-IP router zones across multiple CNs.
+
+### Instance issues
+
+Regardless of how forwarding entities get implemented, the instances attached
+to these networks, which now will have greater connectivity, will still need
+to select an appropriate next-hop.  Use of routing protocols adds complexity
+to both configuration and to each instance.  Multiple next-hop entries using
+ECMP will provide degraded service if one or more forwarding entities fail.
+Selective configuration, for example the next-hop is selected based on
+compute node locality or by some other means, adds complexity to
+configuration, and the drawback of pushing single-point-of-failure to a set
+of instances.
+
+As Router Objects are created, destroyed, and modified, as of this time,
+there is no clear strategy to update running instances about their new
+availability.  A routing daemon on every instance would solve that, at the
+cost of the complexity mentioned previously.  Otherwise, there is no way to
+propagate NAPI or VMAPI updates about reachable networks into instances.  RFD
+28 (https://github.com/joyent/rfd/tree/master/rfd/0028) documents potential
+solutions to update propagation, and may become a dependency for Router
+Objects.
+
+### Inter-DC issues.
+
+<TBD>
 
 
 ## Future and Even Fringe Ideas.
